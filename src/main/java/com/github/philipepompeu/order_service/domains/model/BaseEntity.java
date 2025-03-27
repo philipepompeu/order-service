@@ -6,7 +6,10 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
+
+
 import org.hibernate.annotations.UpdateTimestamp;
+
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,11 +20,11 @@ import java.util.UUID;
 @Filter(name = "softDeleteFilter")
 @Getter
 @Setter
-public abstract class BaseEntity {
+public abstract class BaseEntity  {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
+    @Column(updatable = false, nullable = false)    
+    @GeneratedValue(generator = "UUID")    
     private UUID id;
 
     @CreationTimestamp

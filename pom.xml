@@ -78,6 +78,15 @@
 			<version>5.5.1</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-stream-rabbit -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-stream-rabbit</artifactId>
+			<version>4.2.1</version>
+		</dependency>		
+
+
 	</dependencies>
 
 	<build>
