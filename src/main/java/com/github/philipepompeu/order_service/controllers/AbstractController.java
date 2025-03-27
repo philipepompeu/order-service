@@ -50,7 +50,7 @@ public abstract class AbstractController<T, ID> {
         return ResponseEntity.status(HttpStatusCode.valueOf(200)).body(service.delete(id));
     }
     
-    @PutMapping  
+    @PutMapping("/{id}")
     @Operation(summary = "update a existing record with the id provided")  
     public ResponseEntity<?> update(@PathVariable ID id, @RequestBody T dto){
         return ResponseEntity.ok(service.update(id, dto));

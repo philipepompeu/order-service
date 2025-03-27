@@ -5,8 +5,10 @@ import java.util.UUID;
 import com.github.philipepompeu.order_service.domains.model.ProductEntity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class ProductDto {
 
     private String id;

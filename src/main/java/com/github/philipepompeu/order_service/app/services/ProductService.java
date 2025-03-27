@@ -62,7 +62,7 @@ public class ProductService implements BaseService<ProductDto, UUID> {
         ProductDto dto = new ProductDto(entity);
         
         repository.delete(entity);
-
+        
         return dto;
     }
     
