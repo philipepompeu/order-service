@@ -152,8 +152,8 @@ public class ProductControllerTest {
         
 
         given()
-            //.queryParam("page", 0)                
-            //.queryParam("size", 10)
+            .queryParam("page", 0)                
+            .queryParam("size", 10)
             .with()
                 .port(port)
             .when()
