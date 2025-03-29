@@ -16,14 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import com.github.philipepompeu.order_service.app.dto.ClientDTO;
-import com.github.philipepompeu.order_service.app.dto.ProductDto;
-import com.github.philipepompeu.order_service.app.dto.SalesOrderDTO;
 import com.github.philipepompeu.order_service.app.services.BaseService;
-
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 public abstract class AbstractController<T, ID> {
 
@@ -32,11 +26,6 @@ public abstract class AbstractController<T, ID> {
     protected AbstractController(BaseService<T, ID> service) {
         this.service = service;
     }
-
-    private Class<T> getGenericClass() {
-        return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-    }
-    //@Schema(anyOf = {ClientDTO.class, ProductDto.class, SalesOrderDTO.class})
 
     @PostMapping()
     @Operation(summary = "create a new record")

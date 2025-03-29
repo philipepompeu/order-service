@@ -8,38 +8,56 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.github.philipepompeu.order_service.app.dto.ClientDTO;
+import com.github.philipepompeu.order_service.domains.model.ClientEntity;
+import com.github.philipepompeu.order_service.domains.repository.ClientRepository;
 
 @Service
 public class ClientService implements BaseService<ClientDTO, UUID> {
 
+    private final ClientRepository repository;
+
+    public ClientService(ClientRepository repository){
+        this.repository = repository;
+    }
+
     @Override
     public Optional<ClientDTO> getById(UUID id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getById'");
+        return repository.findById(id).map(op -> new ClientDTO(op) );
     }
 
     @Override
     public ClientDTO create(ClientDTO dto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'create'");
+        var entity = dto.toEntity();
+
+        entity = repository.save(entity);
+
+        return new ClientDTO(entity);
     }
 
     @Override
     public Page<ClientDTO> getAll(Pageable pageable) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAll'");
+        return repository.findAll(pageable).map(entity -> new ClientDTO(entity));   
     }
 
     @Override
     public ClientDTO update(UUID id, ClientDTO dto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+        ClientEntity entity = repository.findById(id).orElseThrow();
+        
+        entity = repository.save(entity);
+        
+        return new ClientDTO(entity);
+        
     }
 
     @Override
     public ClientDTO delete(UUID id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        var entity = repository.findById(id).orElseThrow();
+
+        ClientDTO dto = new ClientDTO(entity);
+        
+        repository.delete(entity);
+        
+        return dto;
     }
     
 }
