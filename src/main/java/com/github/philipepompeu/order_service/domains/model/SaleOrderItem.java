@@ -23,7 +23,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name="sale_order_item")
-@SQLDelete(sql = "UPDATE sale_order_item SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
+//@SQLDelete(sql = "UPDATE sale_order_item SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class SaleOrderItem extends BaseEntity implements Serializable {
 
     @ManyToOne

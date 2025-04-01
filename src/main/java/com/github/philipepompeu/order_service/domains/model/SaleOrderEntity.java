@@ -27,7 +27,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name="sale_order")
-@SQLDelete(sql = "UPDATE sale_order SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
+//@SQLDelete(sql = "UPDATE sale_order SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class SaleOrderEntity extends BaseEntity {
 
     @Column(nullable = false, precision = 10, scale = 2)

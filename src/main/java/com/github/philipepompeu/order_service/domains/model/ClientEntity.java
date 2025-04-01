@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name="client")
-@SQLDelete(sql = "UPDATE client SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
+//@SQLDelete(sql = "UPDATE client SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class ClientEntity extends BaseEntity implements Serializable {
     
     private String fullName;

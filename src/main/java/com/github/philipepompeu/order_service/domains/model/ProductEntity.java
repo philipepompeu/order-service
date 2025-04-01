@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name="product")
-@SQLDelete(sql = "UPDATE product SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
+//@SQLDelete(sql = "UPDATE product SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class ProductEntity extends BaseEntity implements Serializable {
     
     private String title;

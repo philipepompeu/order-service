@@ -4,10 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 
-
+import org.hibernate.annotations.SoftDelete;
+import org.hibernate.annotations.SoftDeleteType;
 import org.hibernate.annotations.UpdateTimestamp;
 
 
@@ -15,9 +14,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @MappedSuperclass
-@EntityListeners(SoftDeleteListener.class)
-@FilterDef(name = "softDeleteFilter", defaultCondition = "revoked_at IS NULL")
-@Filter(name = "softDeleteFilter")
+@SoftDelete(strategy =  SoftDeleteType.DELETED)
 @Getter
 @Setter
 public abstract class BaseEntity  {
@@ -38,12 +35,11 @@ public abstract class BaseEntity  {
     @Column(name = "revoked_at")
     private LocalDateTime revokedAt;
 
-    public void softDelete() {
+    @PreRemove
+    public void onSoftDelete() {
         this.revokedAt = LocalDateTime.now();
     }
 
-    public boolean isDeleted() {
-        return this.revokedAt != null;
-    }
+    
 }
 
