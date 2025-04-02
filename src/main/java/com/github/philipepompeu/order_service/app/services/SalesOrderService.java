@@ -2,8 +2,10 @@ package com.github.philipepompeu.order_service.app.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,8 @@ import com.github.philipepompeu.order_service.domains.repository.ClientRepositor
 import com.github.philipepompeu.order_service.domains.repository.ProductRepository;
 import com.github.philipepompeu.order_service.domains.repository.SaleOrderRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
 
@@ -33,38 +37,44 @@ public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
 
     @Override
     public Optional<SalesOrderDTO> getById(UUID id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getById'");
+        return repository.findById(id).map(entity -> new SalesOrderDTO(entity));
     }
 
     @Override
     public SalesOrderDTO create(SalesOrderDTO dto) {     
         
         
-        ClientEntity client = clientRepository.findById(UUID.fromString(dto.getClientId())).orElseThrow();        
+        ClientEntity client = clientRepository.findById(UUID.fromString(dto.getClientId()))
+                                .orElseThrow(() -> new EntityNotFoundException(String.format("Client with id [ %s ] not found.", dto.getClientId())));
         
-        List<ProductEntity> products = productRepository.findByIdIn(dto.getProducts().stream().map(p -> UUID.fromString(p.getProductId()) ).toList()).orElseThrow();
+        List<UUID> productIds = dto.getProducts().stream().map(p -> UUID.fromString(p.getProductId()) ).toList();
 
-        List<SaleOrderItem> items = new ArrayList<SaleOrderItem>();
+        List<ProductEntity> products = productRepository.findByIdIn(productIds);        
+
+        if (products.isEmpty()) {
+            String listOfIds = productIds.stream().map(id-> id.toString()).collect(Collectors.joining(","));            
+            throw new EntityNotFoundException(String.format("Product with id [ %s ] not found.", listOfIds));
+        }
+
+        // Criar um Map para evitar buscas repetitivas
+        Map<UUID, ProductEntity> productMap = products.stream().collect(Collectors.toMap(ProductEntity::getId, p -> p));
         
         SaleOrderEntity entity = new SaleOrderEntity();
         entity.setClient(client);
         entity.setFreightCost(dto.getFreightCost());        
-        entity.setPaymentMethod(dto.getPaymentMethod());
-        
-        dto.getProducts().forEach(saleItemDto -> {
-            ProductEntity product = products.stream().filter(p-> p.getId().toString().equals(saleItemDto.getProductId())).findFirst().orElseThrow();
+        entity.setPaymentMethod(dto.getPaymentMethod());        
 
-            SaleOrderItem item = new SaleOrderItem();
-            
-            item.setProduct(product);
-            item.setQuantity(saleItemDto.getQuantity());
-            item.setPrice(saleItemDto.getPrice());
-            item.setSaleOrder(entity);            
-            items.add(item);
-        });
-        
+        List<SaleOrderItem> items = dto.getProducts().stream()
+                                        .map(saleItemDto -> {
+                                            ProductEntity product = productMap.get(UUID.fromString(saleItemDto.getProductId()));
+                                            if (product == null) {                
+                                                throw new EntityNotFoundException(String.format("Product with id [ %s ] not found.", saleItemDto.getProductId()));
+                                            }
+
+                                            return new SaleOrderItem(saleItemDto, entity, product);
+                                        }).toList();        
         entity.setItems(items);
+        
         return new SalesOrderDTO(repository.save(entity));        
         
     }

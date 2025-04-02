@@ -2,7 +2,9 @@ package com.github.philipepompeu.order_service.domains.model;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.annotations.SQLDelete;
 
@@ -44,6 +46,14 @@ public class SaleOrderEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+
+    public void setItems(List<SaleOrderItem> items){
+
+        this.items = Optional.ofNullable(items).orElseGet(ArrayList::new);
+
+        items.stream().forEach(it -> it.setSaleOrder(this));
+    }
 
     @PrePersist
     @PreUpdate

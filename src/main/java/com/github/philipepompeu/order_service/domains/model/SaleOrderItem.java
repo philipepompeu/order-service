@@ -6,6 +6,8 @@ import java.math.RoundingMode;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.github.philipepompeu.order_service.app.dto.SaleOrderItemDto;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -23,7 +25,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name="sale_order_item")
-//@SQLDelete(sql = "UPDATE sale_order_item SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class SaleOrderItem extends BaseEntity implements Serializable {
 
     @ManyToOne
@@ -50,6 +51,15 @@ public class SaleOrderItem extends BaseEntity implements Serializable {
         if (quantity != null) {
             quantity = quantity.setScale(2, RoundingMode.HALF_UP);
         }      
+    }
+
+    public SaleOrderItem(SaleOrderItemDto dto, SaleOrderEntity saleOrder, ProductEntity product){
+
+        setProduct(product);
+        setSaleOrder(saleOrder); 
+        
+        setQuantity(dto.getQuantity());
+        setPrice(dto.getPrice());
     }
     
 }
