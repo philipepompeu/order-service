@@ -27,14 +27,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name="sale_order")
-//@SQLDelete(sql = "UPDATE sale_order SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class SaleOrderEntity extends BaseEntity {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalValue;
 
     @OneToMany(mappedBy = "saleOrder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<SaleOrderItem> products;
+    private List<SaleOrderItem> items;
     
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
@@ -48,13 +47,18 @@ public class SaleOrderEntity extends BaseEntity {
 
     @PrePersist
     @PreUpdate
-    public void prePersist() {
+    public void prePersist() {        
+        this.totalValue = items.stream().map(item-> item.getPrice().multiply(item.getQuantity()) ).reduce(BigDecimal.ZERO, BigDecimal::add);               
         
         if (totalValue != null) {
             totalValue = totalValue.setScale(2, RoundingMode.HALF_UP);
         }
         if (freightCost != null) {
             freightCost = freightCost.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        if (freightCost != null && totalValue != null) {
+            totalValue = totalValue.add(freightCost); //Soma o custo do frete ao valor total do pedido
         }
     }
     

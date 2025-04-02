@@ -1,7 +1,5 @@
 package com.github.philipepompeu.order_service.controllers;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;

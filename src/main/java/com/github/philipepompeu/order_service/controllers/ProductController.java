@@ -11,7 +11,7 @@ import com.github.philipepompeu.order_service.app.services.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/v1/products")
 @Tag(name="Products",
      description="List, create, delete and update products for your orders.")
 public class ProductController extends AbstractController<ProductDto, UUID>{
