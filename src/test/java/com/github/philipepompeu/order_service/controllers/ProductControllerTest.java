@@ -15,8 +15,11 @@ import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DisplayName("Test E2E of the ProductController(/products)")
+@DisplayName("Test E2E of the ProductController(/v1/products)")
 public class ProductControllerTest {
+
+
+    private static final String ENDPOINT_URL = "/v1/products";
     
     @LocalServerPort
     private int port;
@@ -39,7 +42,7 @@ public class ProductControllerTest {
             .body(product)
         .with().port(port)
         .when()
-            .post("/products")
+            .post(ENDPOINT_URL)
         .then()
             .statusCode(201)
             .body("id", notNullValue()) // Verifica se ID foi gerado
@@ -60,7 +63,7 @@ public class ProductControllerTest {
                 .with()
                     .port(port)
                 .when()
-                    .post("/products");
+                    .post(ENDPOINT_URL);
         
         String productId = response.jsonPath().getString("id");
 
@@ -68,7 +71,7 @@ public class ProductControllerTest {
             .with()
                 .port(port)
             .when()
-                .delete("/products/" + productId)
+                .delete(ENDPOINT_URL+ "/" + productId)
             .then()
                 .statusCode(200)
                 .body("id", equalTo(productId));
@@ -87,7 +90,7 @@ public class ProductControllerTest {
                 .with()
                     .port(port)
                 .when()
-                    .post("/products");
+                    .post(ENDPOINT_URL);
         
         String productId = response.jsonPath().getString("id");
 
@@ -100,7 +103,7 @@ public class ProductControllerTest {
             .with()
                 .port(port)
             .when()
-                .put("/products/" + productId)
+                .put("/v1/products/" + productId)
             .then()
                 .statusCode(200)
                 .body("id", equalTo(productId))
@@ -120,7 +123,7 @@ public class ProductControllerTest {
                 .with()
                     .port(port)
                 .when()
-                    .post("/products");
+                    .post(ENDPOINT_URL);
         
         String productId = response.jsonPath().getString("id");
 
@@ -128,7 +131,7 @@ public class ProductControllerTest {
             .with()
                 .port(port)
             .when()
-                .get("/products/" + productId)
+                .get("/v1/products/" + productId)
             .then()
                 .statusCode(200)
                 .body("id", equalTo(productId));
@@ -147,7 +150,7 @@ public class ProductControllerTest {
             .with()
                 .port(port)
             .when()
-                .post("/products")
+                .post(ENDPOINT_URL)
             .then().statusCode(201);        
         
 
@@ -157,7 +160,7 @@ public class ProductControllerTest {
             .with()
                 .port(port)
             .when()
-                .get("/products")
+                .get(ENDPOINT_URL)
             .then()
                 .statusCode(200)
                 .body("content.size()", greaterThan(0))

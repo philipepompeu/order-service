@@ -42,7 +42,6 @@ public class SalesOrderDTO {
 
         this.freightCost = entity.getFreightCost().setScale(2, RoundingMode.HALF_UP);
         this.totalValue = entity.getTotalValue().setScale(2, RoundingMode.HALF_UP);
-
         
         this.products = entity.getItems().stream().map(it-> new SaleOrderItemDto(it) ).toList();
 

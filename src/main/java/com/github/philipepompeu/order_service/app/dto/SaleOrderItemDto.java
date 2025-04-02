@@ -22,16 +22,18 @@ public class SaleOrderItemDto {
     @JsonIgnore()
     private String saleOrderId;
 
+    private String id;
+
     private BigDecimal price;
     private BigDecimal quantity;
 
     public SaleOrderItemDto(SaleOrderItem entity){
-
         
         this.saleOrderId = entity.getSaleOrder().getId().toString();
         this.productId = entity.getProduct().getId().toString();
         this.price = entity.getPrice();
         this.quantity = entity.getQuantity();
+        this.id = entity.getId().toString();
     }
 
 

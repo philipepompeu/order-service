@@ -3,6 +3,7 @@ package com.github.philipepompeu.order_service.domains.model;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
 
@@ -60,6 +61,23 @@ public class SaleOrderItem extends BaseEntity implements Serializable {
         
         setQuantity(dto.getQuantity());
         setPrice(dto.getPrice());
+
+        if (dto.getId() != null) {
+            setId(UUID.fromString(dto.getId()));
+        }
+    }
+
+
+    @Override
+    public boolean equals(Object obj){
+
+        if (obj instanceof SaleOrderItem) {            
+            SaleOrderItem comp = ((SaleOrderItem)obj);
+            if (comp.getId() != null) {                
+                return this.getId().equals(comp.getId());
+            }
+        }
+        return false;
     }
     
 }
