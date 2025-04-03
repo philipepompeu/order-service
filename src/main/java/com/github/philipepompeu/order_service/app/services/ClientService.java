@@ -11,6 +11,8 @@ import com.github.philipepompeu.order_service.app.dto.ClientDTO;
 import com.github.philipepompeu.order_service.domains.model.ClientEntity;
 import com.github.philipepompeu.order_service.domains.repository.ClientRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class ClientService implements BaseService<ClientDTO, UUID> {
 
@@ -41,7 +43,12 @@ public class ClientService implements BaseService<ClientDTO, UUID> {
 
     @Override
     public ClientDTO update(UUID id, ClientDTO dto) {
-        ClientEntity entity = repository.findById(id).orElseThrow();
+        ClientEntity entity = repository.findById(id).orElseThrow(()-> new EntityNotFoundException(String.format("Client with id [ %s ] not found.", id.toString())));
+
+        entity.setFullName(dto.getFullName());
+        entity.setEmail(dto.getEmail());
+        entity.setLegalId(dto.getLegalId());
+        entity.setPhoneNumber(dto.getPhoneNumber());
         
         entity = repository.save(entity);
         
@@ -51,7 +58,7 @@ public class ClientService implements BaseService<ClientDTO, UUID> {
 
     @Override
     public ClientDTO delete(UUID id) {
-        var entity = repository.findById(id).orElseThrow();
+        var entity = repository.findById(id).orElseThrow(()-> new EntityNotFoundException(String.format("Client with id [ %s ] not found.", id.toString())));
 
         ClientDTO dto = new ClientDTO(entity);
         

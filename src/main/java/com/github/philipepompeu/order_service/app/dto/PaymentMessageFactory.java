@@ -20,7 +20,11 @@ public class PaymentMessageFactory {
 
     public static PaymentMessageFactory getFactory(){
         if (instance == null) {
-            instance = new PaymentMessageFactory();
+            synchronized (PaymentMessageFactory.class) {
+                if (instance == null) {
+                    instance = new PaymentMessageFactory();
+                }
+            }            
         }
         return instance;
     }

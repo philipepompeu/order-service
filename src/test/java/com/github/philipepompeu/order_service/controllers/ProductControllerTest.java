@@ -103,7 +103,7 @@ public class ProductControllerTest {
             .with()
                 .port(port)
             .when()
-                .put("/v1/products/" + productId)
+                .put(ENDPOINT_URL+ "/" + productId)
             .then()
                 .statusCode(200)
                 .body("id", equalTo(productId))
@@ -131,7 +131,7 @@ public class ProductControllerTest {
             .with()
                 .port(port)
             .when()
-                .get("/v1/products/" + productId)
+                .get(ENDPOINT_URL+ "/" + productId)
             .then()
                 .statusCode(200)
                 .body("id", equalTo(productId));

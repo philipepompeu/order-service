@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.philipepompeu.order_service.app.dto.CreditCardMessage;
+
 import com.github.philipepompeu.order_service.app.dto.PaymentMessageFactory;
 import com.github.philipepompeu.order_service.app.dto.PaymentQueueMessageDto;
-import com.github.philipepompeu.order_service.domains.model.PaymentMethod;
+
 import com.github.philipepompeu.order_service.domains.model.SaleOrderEntity;
 
 @Service

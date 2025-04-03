@@ -1,5 +1,6 @@
 package com.github.philipepompeu.order_service.app.services;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +49,11 @@ public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
     private void notifyObservers(SaleOrderEntity salesOrder, String operation) {       
 
         for (SalesOrderObserver observer : observers) {
-            observer.getClass().getMethod(operation, SaleOrderEntity.class).invoke(observer,salesOrder);            
+            try {
+                observer.getClass().getMethod(operation, SaleOrderEntity.class).invoke(observer,salesOrder);
+            } catch (Exception e) {
+                System.out.println("NotifyObserver error"+e.getMessage());           
+            }            
         }
     }
 
