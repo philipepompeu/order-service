@@ -27,7 +27,6 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @Table(name="sale_order")
 public class SaleOrderEntity extends BaseEntity {
 
@@ -46,6 +45,12 @@ public class SaleOrderEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+
+    public SaleOrderEntity(){
+
+        this.items = new ArrayList<SaleOrderItem>();
+    }
 
 
     public void setItems(List<SaleOrderItem> items){

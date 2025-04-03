@@ -1,6 +1,7 @@
 package com.github.philipepompeu.order_service.app.services;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,14 +28,29 @@ import jakarta.persistence.EntityNotFoundException;
 @Service
 public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
 
-    @Autowired
-    private SaleOrderRepository repository;
+    private final SaleOrderRepository repository;
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
     
-    @Autowired
-    private ClientRepository clientRepository;
+    private final ClientRepository clientRepository;
+
+    private final List<SalesOrderObserver> observers = new ArrayList<>();
+
+    public SalesOrderService(SaleOrderRepository repository,ProductRepository productRepository,ClientRepository clientRepository, PaymentObserver paymentObserver){
+
+        this.repository = repository;
+        this.productRepository = productRepository;
+        this.clientRepository = clientRepository;
+
+        observers.add(paymentObserver);
+    }
+
+    private void notifyObservers(SaleOrderEntity salesOrder, String operation) {       
+
+        for (SalesOrderObserver observer : observers) {
+            observer.getClass().getMethod(operation, SaleOrderEntity.class).invoke(observer,salesOrder);            
+        }
+    }
 
     @Override
     public Optional<SalesOrderDTO> getById(UUID id) {
@@ -78,27 +94,27 @@ public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
                                             }
 
                                             return new SaleOrderItem(saleItemDto, entity, product);
-                                        }).toList();        
+                                        }).toList();
+        
+
         if (entity.getItems().isEmpty()) {
             entity.setItems(items);            
         }else{
-            
-            items.stream()
-                    .filter(it-> it.getId() == null)
-                    .forEach(it -> {
-                        entity.getItems().add(it); //Adiciona os novos itens
-                    });
-            items.stream()
-                    .filter(it -> it.getId() != null)
-                    .forEach(it ->{
+            List<UUID> receivedItemIds  = items.stream().filter(it-> it.getId() != null).map(it -> it.getId()).toList();
 
-                        if (entity.getItems().contains(it)) {
-                            SaleOrderItem currentItem = entity.getItems().get(  entity.getItems().indexOf(it) );
-                            currentItem.setPrice(it.getPrice());
-                            currentItem.setQuantity(it.getQuantity());
-                            currentItem.setProduct(it.getProduct());   
-                        }
-                    });            
+            entity.getItems().removeIf(it -> !receivedItemIds.contains(it.getId()) ); //Remove os itens que não estiverem no update
+            
+            for(SaleOrderItem it :(Iterable<SaleOrderItem>) items.stream()::iterator){
+                if (it.getId() == null) {
+                    entity.getItems().add(it); //Adiciona os novos itens
+                }else if(entity.getItems().contains(it)){
+                    SaleOrderItem currentItem = entity.getItems().get(  entity.getItems().indexOf(it) );
+                    currentItem.setPrice(it.getPrice());
+                    currentItem.setQuantity(it.getQuantity());
+                    currentItem.setProduct(it.getProduct());
+                }
+            }          
+                       
         }
 
         return entity;
@@ -110,9 +126,13 @@ public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
 
         dto.setId(null);//garante que vai criar um novo registro
 
-        SaleOrderEntity entity = convertDtoToEntity(dto);        
+        SaleOrderEntity entity = convertDtoToEntity(dto); 
+
+        dto = new SalesOrderDTO(repository.save(entity));
         
-        return new SalesOrderDTO(repository.save(entity));        
+        notifyObservers(entity, "onSalesOrderCreated");
+
+        return dto;
         
     }
 
@@ -127,13 +147,19 @@ public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
         dto.setId(id.toString());
         SaleOrderEntity entity = convertDtoToEntity(dto);
 
+        notifyObservers(entity, "onSalesOrderUpdated");
+
         return new SalesOrderDTO(repository.save(entity));
     }
 
     @Override
     public SalesOrderDTO delete(UUID id) {
         SaleOrderEntity entity = repository.findById(id).orElseThrow(()-> new EntityNotFoundException(String.format("Order id [%s] not found", id.toString())));
+        
         repository.delete(entity);
+
+        notifyObservers(entity, "onSalesOrderDeleted");
+
         return new SalesOrderDTO(entity);
     }
     

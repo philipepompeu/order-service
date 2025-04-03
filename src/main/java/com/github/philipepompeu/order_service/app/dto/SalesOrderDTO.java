@@ -2,14 +2,12 @@ package com.github.philipepompeu.order_service.app.dto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.philipepompeu.order_service.domains.model.ClientEntity;
+
 import com.github.philipepompeu.order_service.domains.model.PaymentMethod;
 import com.github.philipepompeu.order_service.domains.model.SaleOrderEntity;
-import com.github.philipepompeu.order_service.domains.model.SaleOrderItem;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
