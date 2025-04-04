@@ -1,6 +1,7 @@
 package com.github.philipepompeu.order_service.app.services;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,6 +69,7 @@ public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
         if (dto.getId() != null && !dto.getId().isEmpty() && !dto.getId().isBlank() ) {
             UUID id = UUID.fromString(dto.getId());
             entity = repository.findById(id).orElseThrow(()-> new EntityNotFoundException(String.format("Order id [%s] not found", id.toString())));
+            entity.setUpdatedAt(LocalDateTime.now());//caso apenas os itens sofram alterações, força atualização da entidade SaleOrderEntity, dessa forma atualizando o totalizador
         }else{
             entity = new SaleOrderEntity();
         }

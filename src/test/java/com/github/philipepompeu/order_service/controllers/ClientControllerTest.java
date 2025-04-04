@@ -7,13 +7,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.github.philipepompeu.order_service.app.dto.ClientDTO;
-import com.github.philipepompeu.order_service.app.dto.ProductDto;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
+
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Test E2E of the ClientController(/v1/clients)")
@@ -80,6 +81,21 @@ public class ClientControllerTest {
                 .statusCode(200)
                 .body("id", equalTo(clientId));
     }
+
+    @Test
+    void shouldFailToDeleteNonExistentId() {               
+        
+        String clientId = UUID.randomUUID().toString();
+
+        given()
+            .with()
+                .port(port)
+            .when()
+                .delete(ENDPOINT_URL+ "/" + clientId)
+            .then()
+                .statusCode(422);
+                
+    }
     
     @Test
     void shouldUpdateAExistingClient() {
@@ -114,6 +130,29 @@ public class ClientControllerTest {
                 .statusCode(200)
                 .body("id", equalTo(clientId))
                 .body("email", equalTo("updated@email.com"));
+    }
+
+    @Test
+    void shouldFailToUpdateNonExistentId() {
+        ClientDTO client = new ClientDTO();
+        client.setFullName("Client Full Name");
+        client.setEmail("email@provider.com");
+        client.setLegalId("9999900000");
+        client.setPhoneNumber("+5511993632499");     
+        
+        String clientId = UUID.randomUUID().toString();
+
+        client.setId(clientId);        
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(client)
+            .with()
+                .port(port)
+            .when()
+                .put(ENDPOINT_URL+ "/" + clientId)
+            .then()
+                .statusCode(422);
     }
     
     @Test
