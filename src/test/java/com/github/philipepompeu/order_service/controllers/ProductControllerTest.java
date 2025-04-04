@@ -10,9 +10,12 @@ import com.github.philipepompeu.order_service.app.dto.ProductDto;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
+
+import java.util.Map;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Test E2E of the ProductController(/v1/products)")
@@ -24,9 +27,27 @@ public class ProductControllerTest {
     @LocalServerPort
     private int port;
 
+    private String jwtToken;
+
     @BeforeEach
     void setup() {        
-        baseURI = "http://localhost";        
+        baseURI = "http://localhost";
+
+        Response response = given()
+        .contentType(ContentType.JSON)
+        .body(Map.of("username", "admin", "password", "123"))
+        .port(port)
+        .when()
+            .post("/login");
+
+        jwtToken = response.body().asString();
+    }
+
+    RequestSpecification authenticatedRequest() {
+        return given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + jwtToken)
+            .with().port(port);
     }
 
 
@@ -37,11 +58,9 @@ public class ProductControllerTest {
         product.setDescription("Sony Playstation 5 Slim");
         product.setId("id-to-be-ignored");       
 
-        given()
-            .contentType(ContentType.JSON)
+        authenticatedRequest()
             .body(product)
-        .with().port(port)
-        .when()
+            .when()
             .post(ENDPOINT_URL)
         .then()
             .statusCode(201)
@@ -51,25 +70,37 @@ public class ProductControllerTest {
     }
     
     @Test
+    void shouldFailForLackOfAuthToken() {
+        ProductDto product = new ProductDto();
+        product.setTitle("PS5 Slim");
+        product.setDescription("Sony Playstation 5 Slim");
+        product.setId("id-to-be-ignored");       
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(product)
+        .with().port(port)            
+            .when()
+            .post(ENDPOINT_URL)
+        .then()
+        .statusCode(401);
+    }
+    
+    @Test
     void shouldDeleteAExistingProduct() {
         ProductDto product = new ProductDto();
         product.setTitle("PS5 Slim");
         product.setDescription("Sony Playstation 5 Slim");
         product.setId("id-to-be-ignored");       
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
+        Response response = authenticatedRequest()
                     .body(product)
-                .with()
-                    .port(port)
-                .when()
+                    .when()
                     .post(ENDPOINT_URL);
         
         String productId = response.jsonPath().getString("id");
 
-        given()
-            .with()
-                .port(port)
+        authenticatedRequest()
             .when()
                 .delete(ENDPOINT_URL+ "/" + productId)
             .then()
@@ -84,30 +115,23 @@ public class ProductControllerTest {
         product.setDescription("Sony Playstation 5 Slim");
         product.setId("id-to-be-ignored");       
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(product)
-                .with()
-                    .port(port)
-                .when()
-                    .post(ENDPOINT_URL);
-        
+        Response response = authenticatedRequest().body(product)
+                            .when()                            
+                                .post(ENDPOINT_URL);        
         String productId = response.jsonPath().getString("id");
 
         product.setId(productId);
         product.setTitle("Updated Title");
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(product)
-            .with()
-                .port(port)
-            .when()
-                .put(ENDPOINT_URL+ "/" + productId)
-            .then()
-                .statusCode(200)
-                .body("id", equalTo(productId))
-                .body("title", equalTo("Updated Title"));
+        authenticatedRequest().body(product)
+        .when()
+            .put(ENDPOINT_URL+ "/" + productId)
+        .then()
+            .statusCode(200)
+            .body("id", equalTo(productId))
+            .body("title", equalTo("Updated Title"));
+                
+            
     }
     
     @Test
@@ -117,24 +141,17 @@ public class ProductControllerTest {
         product.setDescription("Sony Playstation 5 Slim");
         product.setId("id-to-be-ignored");       
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(product)
-                .with()
-                    .port(port)
-                .when()
-                    .post(ENDPOINT_URL);
-        
+        Response response = authenticatedRequest().body(product)
+                            .when()                            
+                                .post(ENDPOINT_URL);        
         String productId = response.jsonPath().getString("id");
 
-        given()                
-            .with()
-                .port(port)
-            .when()
-                .get(ENDPOINT_URL+ "/" + productId)
-            .then()
-                .statusCode(200)
-                .body("id", equalTo(productId));
+        authenticatedRequest()
+        .when()
+            .get(ENDPOINT_URL+ "/" + productId)
+        .then()
+            .statusCode(200)
+            .body("id", equalTo(productId));
     }
 
     @Test
@@ -144,21 +161,13 @@ public class ProductControllerTest {
         product.setDescription("Sony Playstation 5 Slim");
         product.setId("id-to-be-ignored");       
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(product)
-            .with()
-                .port(port)
+        authenticatedRequest().body(product)                
             .when()
                 .post(ENDPOINT_URL)
-            .then().statusCode(201);        
-        
-
-        given()
+            .then().statusCode(201);
+        authenticatedRequest()
             .queryParam("page", 0)                
             .queryParam("size", 10)
-            .with()
-                .port(port)
             .when()
                 .get(ENDPOINT_URL)
             .then()

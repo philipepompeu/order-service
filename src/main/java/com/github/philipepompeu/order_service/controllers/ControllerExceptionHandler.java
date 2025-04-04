@@ -1,10 +1,13 @@
 package com.github.philipepompeu.order_service.controllers;
 
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.github.philipepompeu.order_service.infra.auth.AuthFailureException;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -16,6 +19,14 @@ public class ControllerExceptionHandler {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ex.getMessage());
+    }
+    
+    @ExceptionHandler(AuthFailureException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<String> handleFailedLoginException(AuthFailureException ex) {
+
+        System.out.println(String.format("Auth failed [%s] - %s", ex.getClass().getName(), ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

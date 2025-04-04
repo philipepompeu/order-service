@@ -14,6 +14,7 @@ import com.github.philipepompeu.order_service.domains.model.PaymentMethod;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import net.bytebuddy.utility.RandomString;
 
 import static io.restassured.RestAssured.*;
@@ -22,6 +23,7 @@ import static org.hamcrest.Matchers.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -38,9 +40,18 @@ public class SalesOrderControllerTest {
     private String clientId;
     private List<String> listOfProductsIds;
 
+    private String jwtToken;
+
     @BeforeEach
     void setup() {        
         baseURI = "http://localhost";
+        Response response = given()
+        .contentType(ContentType.JSON)
+        .body(Map.of("username", "admin", "password", "123"))
+        .port(port)
+        .when()
+            .post("/login");
+        jwtToken = response.body().asString();
 
         if (clientId == null || clientId.isEmpty()) {
             this.clientId = getClientId();
@@ -65,11 +76,8 @@ public class SalesOrderControllerTest {
         product.setTitle(random);
         product.setDescription(random);              
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(product)
-                .with()
-                    .port(port)
+        Response response = authenticatedRequest()
+                .body(product)
                 .when()
                     .post("/v1/products");
         
@@ -87,11 +95,8 @@ public class SalesOrderControllerTest {
         client.setPhoneNumber("+5511993632499");
         client.setId("id-to-be-ignored");         
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(client)
-                .with()
-                    .port(port)
+        Response response = authenticatedRequest()
+                .body(client)
                 .when()
                     .post("/v1/clients");
         
@@ -112,6 +117,14 @@ public class SalesOrderControllerTest {
                 }).toList();
         
     }
+
+    RequestSpecification authenticatedRequest() {
+        return given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + jwtToken)
+            .with().port(port);
+    }
+
     @Test
     void shouldCreateSaleOrderSuccessfully() {
         SalesOrderDTO order = new SalesOrderDTO();
@@ -127,10 +140,8 @@ public class SalesOrderControllerTest {
                                                   .multiply(BigDecimal.valueOf(order.getProducts().size()))
                                                   .add(order.getFreightCost());
 
-        given()
-            .contentType(ContentType.JSON)
-            .body(order)
-        .with().port(port)
+        authenticatedRequest()  
+        .body(order)
         .when()
             .post(ENDPOINT_URL)
         .then()
@@ -153,19 +164,14 @@ public class SalesOrderControllerTest {
         order.getProducts().forEach(product -> product.setPrice(BigDecimal.valueOf(100)));
         order.setId("id-to-be-ignored");           
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(order)
-                .with()
-                    .port(port)
-                .when()
-                    .post(ENDPOINT_URL);
+        Response response = authenticatedRequest()
+                            .body(order)
+                            .when()
+                                .post(ENDPOINT_URL);
         
         String orderId = response.jsonPath().getString("id");
 
-        given()
-            .with()
-                .port(port)
+        authenticatedRequest()
             .when()
                 .delete(ENDPOINT_URL+ "/" + orderId)
             .then()
@@ -179,9 +185,7 @@ public class SalesOrderControllerTest {
         
         String clientId = UUID.randomUUID().toString();
 
-        given()
-            .with()
-                .port(port)
+        authenticatedRequest()
             .when()
                 .delete(ENDPOINT_URL+ "/" + clientId)
             .then()
@@ -200,11 +204,8 @@ public class SalesOrderControllerTest {
         order.getProducts().forEach(product -> product.setPrice(BigDecimal.valueOf(100)));
         order.setId("id-to-be-ignored");     
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(order)
-                .with()
-                    .port(port)
+        Response response = authenticatedRequest()
+                .body(order)
                 .when()
                     .post(ENDPOINT_URL);
         
@@ -216,11 +217,8 @@ public class SalesOrderControllerTest {
         order.setProducts(productsWithIds);
         order.getProducts().forEach(p -> p.setPrice(BigDecimal.valueOf(200)));        
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(order)
-            .with()
-                .port(port)
+        authenticatedRequest()
+            .body(order)
             .when()
                 .put(ENDPOINT_URL+ "/" + orderId)
             .then()
@@ -245,11 +243,8 @@ public class SalesOrderControllerTest {
 
         order.setId(orderId);        
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(order)
-            .with()
-                .port(port)
+        authenticatedRequest()
+            .body(order)
             .when()
                 .put(ENDPOINT_URL+ "/" + orderId)
             .then()
@@ -267,19 +262,14 @@ public class SalesOrderControllerTest {
         order.getProducts().forEach(product -> product.setPrice(BigDecimal.valueOf(100)));
         order.setId("id-to-be-ignored");     
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(order)
-                .with()
-                    .port(port)
+        Response response = authenticatedRequest()
+                .body(order)
                 .when()
                     .post(ENDPOINT_URL);
         
         String orderId = response.jsonPath().getString("id");
 
-        given()                
-            .with()
-                .port(port)
+        authenticatedRequest()
             .when()
                 .get(ENDPOINT_URL+ "/" + orderId)
             .then()
@@ -298,21 +288,16 @@ public class SalesOrderControllerTest {
         order.getProducts().forEach(product -> product.setPrice(BigDecimal.valueOf(100)));
         order.setId("id-to-be-ignored");       
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(order)
-            .with()
-                .port(port)
+        authenticatedRequest()
+            .body(order)
             .when()
                 .post(ENDPOINT_URL)
             .then().statusCode(201);        
         
 
-        given()
+        authenticatedRequest()
             .queryParam("page", 0)                
             .queryParam("size", 10)
-            .with()
-                .port(port)
             .when()
                 .get(ENDPOINT_URL)
             .then()

@@ -10,10 +10,12 @@ import com.github.philipepompeu.order_service.app.dto.ClientDTO;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -26,9 +28,25 @@ public class ClientControllerTest {
     @LocalServerPort
     private int port;
 
+    private String jwtToken;
+
     @BeforeEach
     void setup() {        
         baseURI = "http://localhost";
+        Response response = given()
+        .contentType(ContentType.JSON)
+        .body(Map.of("username", "admin", "password", "123"))
+        .port(port)
+        .when()
+            .post("/login");
+        jwtToken = response.body().asString();
+    }
+
+    RequestSpecification authenticatedRequest() {
+        return given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + jwtToken)
+            .with().port(port);
     }
 
     @Test
@@ -40,10 +58,8 @@ public class ClientControllerTest {
         client.setPhoneNumber("+5511993632499");
         client.setId("id-to-be-ignored");       
 
-        given()
-            .contentType(ContentType.JSON)
-            .body(client)
-        .with().port(port)
+        authenticatedRequest()
+        .body(client)
         .when()
             .post(ENDPOINT_URL)
         .then()
@@ -62,19 +78,14 @@ public class ClientControllerTest {
         client.setPhoneNumber("+5511993632499");
         client.setId("id-to-be-ignored");         
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(client)
-                .with()
-                    .port(port)
-                .when()
-                    .post(ENDPOINT_URL);
+        Response response = authenticatedRequest()
+                    .body(client)                
+                    .when()
+                        .post(ENDPOINT_URL);
         
         String clientId = response.jsonPath().getString("id");
 
-        given()
-            .with()
-                .port(port)
+        authenticatedRequest()
             .when()
                 .delete(ENDPOINT_URL+ "/" + clientId)
             .then()
@@ -87,9 +98,7 @@ public class ClientControllerTest {
         
         String clientId = UUID.randomUUID().toString();
 
-        given()
-            .with()
-                .port(port)
+        authenticatedRequest()
             .when()
                 .delete(ENDPOINT_URL+ "/" + clientId)
             .then()
@@ -106,11 +115,8 @@ public class ClientControllerTest {
         client.setPhoneNumber("+5511993632499");
         client.setId("id-to-be-ignored");     
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(client)
-                .with()
-                    .port(port)
+        Response response = authenticatedRequest()
+                .body(client)
                 .when()
                     .post(ENDPOINT_URL);
         
@@ -119,11 +125,8 @@ public class ClientControllerTest {
         client.setId(clientId);
         client.setEmail("updated@email.com");
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(client)
-            .with()
-                .port(port)
+        authenticatedRequest()
+            .body(client)
             .when()
                 .put(ENDPOINT_URL+ "/" + clientId)
             .then()
@@ -144,11 +147,8 @@ public class ClientControllerTest {
 
         client.setId(clientId);        
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(client)
-            .with()
-                .port(port)
+        authenticatedRequest()
+            .body(client)
             .when()
                 .put(ENDPOINT_URL+ "/" + clientId)
             .then()
@@ -164,19 +164,14 @@ public class ClientControllerTest {
         client.setPhoneNumber("+5511993632499");
         client.setId("id-to-be-ignored");     
 
-        Response response = given()
-                    .contentType(ContentType.JSON)
-                    .body(client)
-                .with()
-                    .port(port)
+        Response response = authenticatedRequest()
+                .body(client)
                 .when()
                     .post(ENDPOINT_URL);
         
         String clientId = response.jsonPath().getString("id");
 
-        given()                
-            .with()
-                .port(port)
+        authenticatedRequest()
             .when()
                 .get(ENDPOINT_URL+ "/" + clientId)
             .then()
@@ -193,21 +188,16 @@ public class ClientControllerTest {
         client.setPhoneNumber("+5511993632499");
         client.setId("id-to-be-ignored");      
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(client)
-            .with()
-                .port(port)
+        authenticatedRequest()
+            .body(client)
             .when()
                 .post(ENDPOINT_URL)
             .then().statusCode(201);        
         
 
-        given()
+        authenticatedRequest()
             .queryParam("page", 0)                
             .queryParam("size", 10)
-            .with()
-                .port(port)
             .when()
                 .get(ENDPOINT_URL)
             .then()
