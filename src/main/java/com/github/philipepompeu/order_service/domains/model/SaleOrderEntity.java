@@ -9,7 +9,9 @@ import java.util.Optional;
 import org.hibernate.annotations.SQLDelete;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,6 +19,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -45,10 +48,18 @@ public class SaleOrderEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "sales_order_status_history", joinColumns = @JoinColumn(name = "sales_order_id"))
+    @OrderBy("changedAt ASC")
+    private List<SalesOrderStatusHistory> statusHistory;
+
 
     public SaleOrderEntity(){
 
         this.items = new ArrayList<SaleOrderItem>();
+        this.statusHistory = new ArrayList<>(){{
+            add(new SalesOrderStatusHistory(SalesOrderStatus.OPEN));
+        }};
     }
 
 
@@ -74,7 +85,18 @@ public class SaleOrderEntity extends BaseEntity {
         if (freightCost != null && totalValue != null) {
             totalValue = totalValue.add(freightCost); //Soma o custo do frete ao valor total do pedido
         }
+    }    
+
+    public void setNewStatus(SalesOrderStatus status) {
+        if (!getCurrentStatus().equals(status)) {        
+            this.statusHistory.add(new SalesOrderStatusHistory(status));
+        }
     }
-    
+
+    public SalesOrderStatus getCurrentStatus() {
+        return statusHistory.isEmpty()
+            ? null
+            : statusHistory.get(statusHistory.size() - 1).getStatus();
+    }
     
 }

@@ -38,6 +38,7 @@ public class PaymentMessageFactory {
                 BasicPaymentMessage message = classByPaymentMethod.get(salesOrderEntity.getPaymentMethod()).getDeclaredConstructor().newInstance();
 
                 message.create(salesOrderEntity);
+                message.setOrderId(salesOrderEntity.getId().toString());
 
                 return objectMapper.writeValueAsString(message);           
             } catch (Exception e) {

@@ -1,21 +1,18 @@
 package com.github.philipepompeu.order_service.app.services;
 
-import java.lang.reflect.InvocationTargetException;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.github.philipepompeu.order_service.app.dto.SaleOrderItemDto;
 import com.github.philipepompeu.order_service.app.dto.SalesOrderDTO;
 import com.github.philipepompeu.order_service.domains.model.ClientEntity;
 import com.github.philipepompeu.order_service.domains.model.ProductEntity;

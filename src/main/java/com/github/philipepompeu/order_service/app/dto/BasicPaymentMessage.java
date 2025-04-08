@@ -13,6 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public abstract class BasicPaymentMessage {
     
+    private String orderId;
     private BigDecimal value;
     private String payerId;
     private String payerEmail;
