@@ -49,5 +49,6 @@ public class ControllerExceptionHandler {
         problemDetail.setDetail(detail);
         problemDetail.setProperty("timestamp", LocalDateTime.now());
         return problemDetail;
+    }
     
 }
