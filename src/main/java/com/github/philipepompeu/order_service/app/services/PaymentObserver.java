@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.philipepompeu.order_service.app.dto.PaymentMessageFactory;
 import com.github.philipepompeu.order_service.app.dto.PaymentQueueMessageDto;
 
@@ -45,6 +46,9 @@ public class PaymentObserver implements SalesOrderObserver {
         String content = PaymentMessageFactory.getFactory().getPaymentMessage(salesOrderEntity);        
         
         if (content != null) {
+
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             
             PaymentQueueMessageDto message = new PaymentQueueMessageDto();
             message.setEvent(event);
