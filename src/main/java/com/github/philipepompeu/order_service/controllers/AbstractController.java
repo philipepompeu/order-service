@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ public abstract class AbstractController<T, ID> {
     }
     
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') || hasAuthority('ADMIN')")
     @Operation(summary = "delete a existing record with the id provided")
     public ResponseEntity<?> delete(@PathVariable ID id){        
         return ResponseEntity.status(HttpStatusCode.valueOf(200)).body(service.delete(id));

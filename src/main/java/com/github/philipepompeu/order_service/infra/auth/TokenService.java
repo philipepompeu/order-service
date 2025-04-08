@@ -30,6 +30,7 @@ public class TokenService {
             
             String token = JWT.create()
                             .withIssuer(issuer)
+                            .withClaim("roles", user.getRoles().stream().toList())
                             .withSubject(user.getUsername())
                             .withExpiresAt(this.generateExperationDate())
                             .sign(algorithm);
