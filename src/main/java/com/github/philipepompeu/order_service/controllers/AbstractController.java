@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.github.philipepompeu.order_service.app.services.BaseService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 
 public abstract class AbstractController<T, ID> {
 
@@ -28,7 +29,7 @@ public abstract class AbstractController<T, ID> {
 
     @PostMapping()
     @Operation(summary = "create a new record")
-    public ResponseEntity<T> create(@RequestBody T dto){
+    public ResponseEntity<T> create(@RequestBody @Valid T dto){
         return ResponseEntity.status(HttpStatusCode.valueOf(201)).body(service.create(dto));
     }
     
@@ -41,7 +42,7 @@ public abstract class AbstractController<T, ID> {
     
     @PutMapping("/{id}")
     @Operation(summary = "update a existing record with the id provided")  
-    public ResponseEntity<?> update(@PathVariable ID id, @RequestBody T dto){
+    public ResponseEntity<?> update(@PathVariable ID id, @RequestBody @Valid T dto){
         return ResponseEntity.ok(service.update(id, dto));
     }
 

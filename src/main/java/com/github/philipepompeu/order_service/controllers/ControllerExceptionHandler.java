@@ -2,13 +2,14 @@ package com.github.philipepompeu.order_service.controllers;
 
 import org.springframework.http.ResponseEntity;
 
+
 import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.github.philipepompeu.order_service.infra.auth.AuthFailureException;
 
@@ -32,6 +33,16 @@ public class ControllerExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
     }
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)    
+    public ResponseEntity<ProblemDetail> MethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        ProblemDetail problemDetail = createProblemDetail(HttpStatus.BAD_REQUEST, "Validation Failed", ex.getMessage());        
+
+        System.out.println(String.format("Validation Failed [%s] - %s", ex.getClass().getName(), ex.getMessage()));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
 
     @ExceptionHandler(Exception.class)    
     public ResponseEntity<ProblemDetail> handleGenericException(Exception ex) {

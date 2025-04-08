@@ -15,8 +15,6 @@ import com.github.philipepompeu.order_service.domains.model.SaleOrderEntity;
 @Service
 public class PaymentObserver implements SalesOrderObserver {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
     @Autowired
     private MessageProducer messageProducer;
 
@@ -46,26 +44,13 @@ public class PaymentObserver implements SalesOrderObserver {
         String content = PaymentMessageFactory.getFactory().getPaymentMessage(salesOrderEntity);        
         
         if (content != null) {
-
-            objectMapper.registerModule(new JavaTimeModule());
-            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             
             PaymentQueueMessageDto message = new PaymentQueueMessageDto();
             message.setEvent(event);
             message.setContent(content);
-    
-            try {
-                String finalMessage = objectMapper.writeValueAsString(message);
-                this.messageProducer.sendMessage(finalMessage);
-            } catch (JsonProcessingException e) {            
-                e.printStackTrace();
-            }
-        }
-
-       
-
-
-        
+            this.messageProducer.sendPaymentMessage(message);
+            
+        }       
     }
 
 }

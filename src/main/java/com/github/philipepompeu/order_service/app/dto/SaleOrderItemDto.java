@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.philipepompeu.order_service.domains.model.SaleOrderItem;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +20,7 @@ public class SaleOrderItemDto {
     
     
     @JsonProperty(required = true)
+    @NotBlank(message="Product ID is required.")
     private String productId;
 
     @JsonIgnore()
@@ -24,7 +28,10 @@ public class SaleOrderItemDto {
 
     private String id;
 
+    @Positive(message="Price must be positive.")
     private BigDecimal price;
+    
+    @Positive(message="Quantity must be positive.")    
     private BigDecimal quantity;
 
     public SaleOrderItemDto(SaleOrderItem entity){
