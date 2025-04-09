@@ -22,6 +22,13 @@ services:
     ports:
       - "5672:5672"   # Porta para comunicação entre serviços
       - "15672:15672" # UI Web do RabbitMQ
+  
+  redis:
+    image: redis:7
+    container_name: order-service-redis
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:
