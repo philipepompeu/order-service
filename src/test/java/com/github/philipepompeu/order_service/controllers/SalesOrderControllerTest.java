@@ -151,6 +151,27 @@ public class SalesOrderControllerTest {
             .body("freightCost", equalTo(BigDecimal.valueOf(100).floatValue()))
             .body("clientId", equalTo(clientId));
     }
+
+    @Test
+    @DisplayName("Should fail to create a new order without items. Test MethodArgumentNotValidException handler.")
+    void shouldFailForEmptyItems() {
+        SalesOrderDTO order = new SalesOrderDTO();
+
+        order.setClientId(clientId);
+        order.setFreightCost(BigDecimal.valueOf(100));
+        order.setPaymentMethod(PaymentMethod.CREDIT_CARD);        
+        order.setProducts(new ArrayList<SaleOrderItemDto>());
+        order.setId("id-to-be-ignored");
+
+        authenticatedRequest()  
+        .body(order)
+        .when()
+            .post(ENDPOINT_URL)
+        .then()
+            .statusCode(400)            
+            .body("title", notNullValue())
+            .body("timestamp", notNullValue());            
+    }
     
    
     @Test
