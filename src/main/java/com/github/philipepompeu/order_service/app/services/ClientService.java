@@ -1,13 +1,16 @@
 package com.github.philipepompeu.order_service.app.services;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.github.philipepompeu.order_service.app.dto.ClientDTO;
+import com.github.philipepompeu.order_service.domains.model.Address;
 import com.github.philipepompeu.order_service.domains.model.ClientEntity;
 import com.github.philipepompeu.order_service.domains.repository.ClientRepository;
 
@@ -65,6 +68,33 @@ public class ClientService implements BaseService<ClientDTO, UUID> {
         repository.delete(entity);
         
         return dto;
+    }
+
+    public List<Address> addAddress(UUID id, Address newAddress) {
+        ClientEntity entity = repository.findById(id).orElseThrow(()-> new EntityNotFoundException(String.format("Client with id [ %s ] not found.", id.toString())));
+
+        entity.getAddresses().add(newAddress);
+        
+        entity = repository.save(entity);       
+        
+        return entity.getAddresses();
+        
+    }
+    
+    public List<Address> removeAddress(UUID clientId, UUID addressId) {
+        ClientEntity entity = repository.findById(clientId).orElseThrow(()-> new EntityNotFoundException(String.format("Client with id [ %s ] not found.", clientId.toString())));
+
+        List<Address> addresses = entity.getAddresses();
+        
+        IntStream.range(0, addresses.size())
+            .filter(i -> addressId.equals(addresses.get(i).getId()))
+            .findFirst()
+            .ifPresent(i -> addresses.remove(i));
+        
+        entity = repository.save(entity);       
+        
+        return entity.getAddresses();
+        
     }
     
 }

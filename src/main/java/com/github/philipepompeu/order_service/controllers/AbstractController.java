@@ -21,7 +21,7 @@ import jakarta.validation.Valid;
 
 public abstract class AbstractController<T, ID> {
 
-    private final BaseService<T, ID> service;
+    protected final BaseService<T, ID> service;
 
     protected AbstractController(BaseService<T, ID> service) {
         this.service = service;
