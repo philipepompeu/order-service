@@ -54,6 +54,7 @@ public class ControllerExceptionHandler {
                 
     }
 
+    //Ao implementar ProblemDetail aderimos ao padrão definido na norma RFC7807
     private ProblemDetail createProblemDetail(HttpStatus status, String title, String detail) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
         problemDetail.setTitle(title);

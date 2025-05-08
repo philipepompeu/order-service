@@ -1,4 +1,21 @@
 services:
+  api:
+    build: ./
+    container_name: order-service-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/order_db
+      SPRING_DATASOURCE_USERNAME: order_user
+      SPRING_DATASOURCE_PASSWORD: order_password
+      RBHOST: rabbitmq      
+      RBPORT: 5672      
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
   postgres:
     image: postgres:15
     container_name: order-service-db

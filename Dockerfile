@@ -1,8 +1,23 @@
-# Usa uma imagem base com JDK 17
-FROM openjdk:17-jdk-slim as builder
+# Etapa 1: build com Maven
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
-# Copia o arquivo JAR gerado pelo Maven
-COPY /target/app.jar app.jar
+# Cria diretório de trabalho
+WORKDIR /app
 
-# Comando para executar a aplicação
+# Copia todos os arquivos do projeto para dentro da imagem
+COPY . .
+
+# Executa o build do projeto (pulando os testes)
+RUN mvn clean package -DskipTests
+
+# Etapa 2: imagem final mais enxuta
+FROM openjdk:17-jdk-slim
+
+# Define diretório de trabalho
+WORKDIR /app
+
+# Copia o JAR da imagem anterior
+COPY --from=builder /app/target/*.jar app.jar
+
+# Comando de inicialização
 ENTRYPOINT ["java", "-jar", "app.jar"]
