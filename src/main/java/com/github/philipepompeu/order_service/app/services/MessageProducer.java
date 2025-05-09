@@ -39,9 +39,11 @@ public class MessageProducer {
     public void sendPaymentMessage(PaymentQueueMessageDto message){
 
         try {            
-            String finalMessage = objectMapper.writeValueAsString(message);            
+            
     
-            this.sendMessage("payment-service", finalMessage);
+            if(!streamBridge.send("payment-service", message)){
+                System.out.println("Fail to send message");                
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to serialize message", e);
         }
