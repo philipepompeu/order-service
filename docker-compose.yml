@@ -63,6 +63,7 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "15672:15672" # UI Web do RabbitMQ
+      - "5672:5672"   # Porta para comunicação entre serviços(payment-service precisa)
   
   redis:
     image: redis:7
