@@ -83,6 +83,22 @@ services:
     depends_on:
       - prometheus
 
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: order-service-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: order-service-promtail
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yml:/etc/promtail/promtail.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/promtail.yaml
   jaeger:
     image: jaegertracing/all-in-one:1.52
     ports:

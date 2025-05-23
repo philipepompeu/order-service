@@ -48,6 +48,7 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
         .requestMatchers(swaggerPattern).permitAll()
+        .requestMatchers("/actuator/prometheus").permitAll() //libera pra monitoramento do prometheus
         .requestMatchers(HttpMethod.POST, "/login").permitAll()
         .anyRequest().authenticated()
         ).addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);

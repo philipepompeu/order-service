@@ -7,6 +7,9 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -15,6 +18,8 @@ import com.github.philipepompeu.order_service.app.dto.PaymentQueueMessageDto;
 
 @Service
 public class MessageProducer {
+
+    private static final Logger log = LoggerFactory.getLogger(MessageProducer.class);
 
     private ObjectMapper objectMapper = new ObjectMapper();   
     
@@ -39,10 +44,9 @@ public class MessageProducer {
     public void sendPaymentMessage(PaymentQueueMessageDto message){
 
         try {            
-            
     
             if(!streamBridge.send("payment-service", message)){
-                System.out.println("Fail to send message");                
+                log.info("Fail to send message");                
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to serialize message", e);
@@ -55,7 +59,8 @@ public class MessageProducer {
          try {
             String serialized = objectMapper.writeValueAsString(message);
             redisTemplate.opsForList().rightPush(redisKey, serialized);
-            System.out.println("Mensagem salva no Redis para reprocessamento.");
+            log.info("Mensagem salva no Redis para reprocessamento.");
+
         } catch (JsonProcessingException ex) {
             ex.printStackTrace();
         }
@@ -73,11 +78,11 @@ public class MessageProducer {
             try {
                 PaymentQueueMessageDto message = objectMapper.readValue(messageJson, PaymentQueueMessageDto.class);
                 sendPaymentMessage(message); // reprocessar com circuit breaker
-                System.out.println("Mensagem reenviada com sucesso.");
+                log.info("Mensagem reenviada com sucesso.");
             } catch (Exception e) {
                 // falhou de novo, adiciona de volta
                 redisTemplate.opsForList().rightPush(redisKey, messageJson);
-                System.out.println("Falha ao reprocessar, mensagem reempilhada.");
+                log.error("Falha ao reprocessar, mensagem reempilhada.");
             }
         }
     }

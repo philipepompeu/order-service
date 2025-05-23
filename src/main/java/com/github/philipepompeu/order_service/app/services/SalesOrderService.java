@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
+    
+    private static final Logger log = LoggerFactory.getLogger(SalesOrderService.class);
 
     private final SaleOrderRepository repository;
 
@@ -49,8 +53,8 @@ public class SalesOrderService implements BaseService<SalesOrderDTO, UUID>{
         for (SalesOrderObserver observer : observers) {
             try {
                 observer.getClass().getMethod(operation, SaleOrderEntity.class).invoke(observer,salesOrder);
-            } catch (Exception e) {
-                System.out.println("NotifyObserver error"+e.getMessage());           
+            } catch (Exception e) {                
+                log.error("NotifyObserver error"+e.getMessage());           
             }            
         }
     }

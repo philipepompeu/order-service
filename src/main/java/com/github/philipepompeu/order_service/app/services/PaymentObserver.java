@@ -1,12 +1,11 @@
 package com.github.philipepompeu.order_service.app.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import com.github.philipepompeu.order_service.app.dto.PaymentMessageFactory;
 import com.github.philipepompeu.order_service.app.dto.PaymentQueueMessageDto;
 
@@ -14,6 +13,8 @@ import com.github.philipepompeu.order_service.domains.model.SaleOrderEntity;
 
 @Service
 public class PaymentObserver implements SalesOrderObserver {
+
+    private static final Logger log = LoggerFactory.getLogger(PaymentObserver.class);
 
     @Autowired
     private MessageProducer messageProducer;
@@ -38,8 +39,8 @@ public class PaymentObserver implements SalesOrderObserver {
 
 
     public void sendMessage(SaleOrderEntity salesOrderEntity, String event){
-
-        System.out.println("Sending message to Payment-Service");
+        
+        log.info("Sending message to Payment-Service - "+ event);
         
         String content = PaymentMessageFactory.getFactory().getPaymentMessage(salesOrderEntity);        
         
