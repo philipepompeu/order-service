@@ -324,7 +324,7 @@ public class SalesOrderControllerTest {
             .then()
                 .statusCode(200)
                 .body("content.size()", greaterThan(0))
-                .body("numberOfElements", greaterThan(0));
+                .body("page.totalElements", greaterThan(0));
     }
 
 }
