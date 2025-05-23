@@ -12,6 +12,7 @@ env:
     DB_HOST: localhost
     DB_USER: order_user
     DB_PASSWORD: order_password
+    DB_PORT: 5432
     RBHOST: localhost
     RBPORT: 5672
     RBUSR: guest
