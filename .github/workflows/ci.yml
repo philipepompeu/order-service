@@ -1,0 +1,105 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+    DB_HOST: localhost
+    DB_USER: order_user
+    DB_PASSWORD: order_password
+    DB_PORT: 5432
+    RBHOST: localhost
+    RBPORT: 5672
+    RBUSR: guest
+    RBPWD: guest
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+jobs:
+  
+  build:
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: order_user
+          POSTGRES_PASSWORD: order_password
+          POSTGRES_DB: order_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U order_user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      rabbitmq:
+        image: rabbitmq:3-management
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+        ports:
+          - 5672:5672
+          - 15672:15672
+        options: >-
+          --health-cmd "rabbitmqctl status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - "6379:6379"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Construir e rodar testes
+        run: mvn clean install        
+
+      - name: Armazenar resultados dos testes em caso de falha
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports/
+  publish-to-docker-hub:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build sem testes
+        run: mvn clean package -DskipTests        
+
+      - name: Login no Docker Hub
+        run: docker login -u ${{secrets.docker_hub_username}} -p ${{secrets.docker_hub_pwd}}
+
+      - name: Construir a imagem Docker
+        run: docker build -t ${{ secrets.docker_hub_username }}/order-service:latest .
+
+      - name: Publicar imagem no Docker Hub
+        run: docker push ${{ secrets.docker_hub_username }}/order-service:latest
